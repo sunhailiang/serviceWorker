@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Page Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+
+</body>
+<script>
+    function openDB(name, callback) {
+        var request = window.indexedDB.open(name)
+        request.onerror = function (e) {
+            console.log("open indexBD error")
+        }
+        request.onsuccess = function (e) {
+            myDB.db = e.target.result
+        }
+        //监听数据库版本变化0->1,1->2...
+        request.onupgradeneeded = function (e) {
+            myDB.db = e.target.result//将打开成功的数据库对象赋值给mydb
+            callback && callback()
+            var store = myDB.db.createObjectStore('books', {
+                keyPath: 'isbn'
+            })
+            //创建索引
+            var titleIndex = store.createIndex("by_title", "title", {
+                unique: true
+            })
+            var autorIndex = store.createIndex("by_author", "author")
+            //初始化数据
+            store.put({
+                title: "titleOne",
+                author: "fred",
+                isbn: 1213345
+            })
+            store.put({
+                title: "titletwo",
+                author: "harry",
+                isbn: 234567
+            })
+            store.put({
+                title: "titlethree",
+                author: "fuck",
+                isbn: 345567
+            })
+        }
+    }
+
+
+    var myDB = {
+        name: "MYDB",
+        version: 1,
+        db: null//成功返回对象
+    }
+    openDB(myDB.name, function () {
+        // myDB.db.close() //关闭数据库
+        // window.indexedDB.deleteDatabase(myDB.db)//删除数据库
+    })
+
+    //indexDB 事务->跟object store 建立关系操作数据
+
+    function addData(db) {
+        console.log("db", db)
+        var transaction = db.transaction("books", "readwrite") //指定操作某个数据库，并设置读写权限
+        var store = transaction.objectStore("books")//关联数据库
+        //获取通过key获取一条数据
+        var req = store.get(1213345)
+        req.onsuccess = function (e) {
+            console.log("get a data", e.target.result)
+        }
+        //添加一条数据
+        store.add({
+                title: "titlefour",
+                author: "不告诉你",
+                isbn: 222222
+            })
+    }
+
+    setTimeout(function () {
+        addData(myDB.db)
+    }, 2000)
+</script>
+
+</html>

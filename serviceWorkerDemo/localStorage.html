@@ -1,0 +1,66 @@
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Page Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+
+</body>
+<script>
+
+    //创建数据库
+    function openDB(myIndexDb) {
+        let db = window.indexedDB.open(myIndexDb.name);
+        db.onerror = function (e) {
+            console.log("open indexDB error")
+        },
+            db.onsuccess = function (e) {
+                console.log("success", e)
+                myIndexDb.db = e.target.result
+            },
+            //打开数据库时候会出发这个函数，进行sotre更新
+            db.onupgradeneeded = function () {
+                console.log("函数呢？", myIndexDb.db)
+                let store = myIndexDb.db.createObjectStore('books', {
+                    keyPath: "keys"
+                })
+                //创建索引
+                let titleIndex = store.createIndex("by_title", "title", {
+                    unique: true
+                })
+                let autorIndex = store.createIndex("by_author", "author")
+                store.put({
+                    title: "one",
+                    autor: "呵呵哒",
+                    isbn: 11111
+                })
+                store.put({
+                    title: "two",
+                    autor: "fuck",
+                    isbn: 666666
+                })
+                store.put({
+                    title: "three",
+                    autor: "哼哼",
+                    isbn: 9999
+                })
+            }
+
+    }
+    var myIndexDb = {
+        name: "myDB",
+        version: "1.0.0",
+        db: null
+    }
+    openDB(myIndexDb, function () {
+
+    })
+
+    // console.log("db", window.indexedDB.deleteDatabase(myIndexDb.db))//删除数据库
+</script>
+
+</html>
